@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class TextUtils {
+class Formatter {
   static String formatDate(DateTime date) {
     return DateFormat('dd/MM/yyyy').format(date);
   }

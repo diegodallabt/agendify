@@ -22,7 +22,7 @@ class PostModelAdapter extends TypeAdapter<PostModel> {
       description: fields[2] as String,
       date: fields[3] as DateTime,
       hour: fields[4] as String?,
-      urlImage: fields[5] as String?,
+      urlImage: fields[5] as String,
     );
   }
 

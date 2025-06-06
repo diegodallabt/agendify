@@ -1,3 +1,4 @@
+import 'package:agendify/modules/calendar/view/calendar_page.dart';
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
@@ -12,7 +13,11 @@ class Agendify extends StatelessWidget {
       title: 'Agendify',
       theme: AppTheme.light,
       debugShowCheckedModeBanner: false,
-      home: const SchedulePage(),
+      initialRoute: '/calendar',
+      routes: {
+        '/calendar': (context) => const CalendarPage(),
+        '/schedule': (context) => const SchedulePage(),
+      },
     );
   }
 }
