@@ -5,6 +5,7 @@ class AFYInput extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType? keyboardType;
   final int maxLines;
+  final String? placeholder;
   final bool readOnly;
   final VoidCallback? onTap;
   final IconData? icon;
@@ -15,6 +16,7 @@ class AFYInput extends StatelessWidget {
     required this.controller,
     this.keyboardType,
     this.maxLines = 1,
+    this.placeholder,
     this.readOnly = false,
     this.onTap,
     this.icon,
@@ -50,6 +52,7 @@ class AFYInput extends StatelessWidget {
           decoration: InputDecoration(
             filled: true,
             fillColor: theme.colorScheme.secondary,
+            hintText: placeholder,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
