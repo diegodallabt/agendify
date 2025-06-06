@@ -2,7 +2,7 @@ import 'package:agendify/modules/schedule/widget/image_item.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/utils/text_utils.dart';
+import '../../../core/utils/formatter.dart';
 import '../viewmodel/schedule_viewmodel.dart';
 import '../widget/button.dart';
 import '../widget/input.dart';
@@ -102,9 +102,10 @@ class _SchedulePageState extends State<SchedulePage> {
                       ),
 
                       const SizedBox(height: 34),
-                      AFYInput(label: 'Título', controller: titleController),
+                      AFYInput(placeholder: 'Qual o título?', label: 'Título', controller: titleController),
                       const SizedBox(height: 24),
                       AFYInput(
+                        placeholder: 'Escreva algo legal para as pessoas verem',
                         label: 'Legenda',
                         controller: descriptionController,
                         maxLines: 6,
@@ -119,6 +120,7 @@ class _SchedulePageState extends State<SchedulePage> {
                         children: [
                           Expanded(
                             child: AFYInput(
+                              placeholder: 'Data',
                               label: '',
                               controller: dateController,
                               readOnly: true,
@@ -131,7 +133,7 @@ class _SchedulePageState extends State<SchedulePage> {
                                 );
                                 if (selected != null) {
                                   dateController.text =
-                                    TextUtils.formatDate(selected);
+                                    Formatter.formatDate(selected);
                                 }
                               },
                               icon: Icons.calendar_today,
@@ -140,6 +142,7 @@ class _SchedulePageState extends State<SchedulePage> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: AFYInput(
+                              placeholder: 'Hora',
                               label: '',
                               controller: timeController,
                               readOnly: true,
@@ -149,7 +152,7 @@ class _SchedulePageState extends State<SchedulePage> {
                                   initialTime: TimeOfDay.now(),
                                 );
                                 if (selected != null) {
-                                  timeController.text = TextUtils.formatTime(selected);
+                                  timeController.text = Formatter.formatTime(selected);
                                 }
                               },
                               icon: Icons.access_time,
