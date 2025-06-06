@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../../schedule/model/post_model.dart';
 
 class CalendarViewModel extends ChangeNotifier {
+  late Box<PostModel> _box;
+
   DateTime _selectedDate = DateTime.now();
   DateTime _focusedMonth = DateTime(DateTime.now().year, DateTime.now().month);
 
-  final List<PostModel> _allPosts;
-
-  CalendarViewModel(this._allPosts);
+  Future<void> init() async {
+    _box = Hive.box<PostModel>('scheduled_posts');
+    notifyListeners();
+  }
 
   DateTime get selectedDate => _selectedDate;
   DateTime get focusedMonth => _focusedMonth;
-  List<PostModel> get allPosts => List.unmodifiable(_allPosts);
+
+  List<PostModel> get allPosts => _box.values.toList();
 
   void selectDate(DateTime date) {
     _selectedDate = date;
@@ -28,20 +33,24 @@ class CalendarViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> deletePost(PostModel post) async {
+    await post.delete();
+    notifyListeners();
+  }
+
   bool hasPostForDate(DateTime date) {
     final clean = DateUtils.dateOnly(date);
-    return _allPosts.any((p) => DateUtils.isSameDay(p.date, clean));
+    return _box.values.any((p) => DateUtils.isSameDay(p.date, clean));
   }
 
   List<PostModel> getPostsForSelectedDate() {
     final clean = DateUtils.dateOnly(_selectedDate);
-    return _allPosts.where((p) => DateUtils.isSameDay(p.date, clean)).toList();
+    return _box.values
+        .where((p) => DateUtils.isSameDay(p.date, clean))
+        .toList();
   }
 
-  void updatePosts(List<PostModel> posts) {
-    _allPosts
-      ..clear()
-      ..addAll(posts);
+  void refresh() {
     notifyListeners();
   }
 }

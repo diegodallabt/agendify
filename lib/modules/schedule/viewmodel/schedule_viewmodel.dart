@@ -18,13 +18,87 @@ class ScheduleViewModel extends ChangeNotifier {
 
   Future<void> init() async {
     _box = Hive.box<PostModel>('scheduled_posts');
-    loadInitialImages(); 
+    loadInitialImages();
     notifyListeners();
   }
 
   Future<void> addPost(PostModel post) async {
     await _box.add(post);
     notifyListeners();
+  }
+
+  Future<String?> schedulePost({
+    required String title,
+    required String description,
+    required DateTime? date,
+    required String? hour,
+    required String? urlImage,
+  }) async {
+    if (urlImage == null) {
+      return 'Por favor, selecione uma imagem.';
+    }
+    if (title.trim().isEmpty) {
+      return 'Por favor, informe um título.';
+    }
+    if (description.trim().isEmpty) {
+      return 'Por favor, informe uma legenda.';
+    }
+    if (date == null) {
+      return 'Por favor, selecione uma data.';
+    }
+    if (hour == null || hour.trim().isEmpty) {
+      return 'Por favor, selecione um horário.';
+    }
+
+    final id = DateTime.now().microsecondsSinceEpoch.toString();
+
+    final newPost = PostModel(
+      id: id,
+      title: title.trim(),
+      description: description.trim(),
+      date: date,
+      hour: hour.trim(),
+      urlImage: urlImage,
+    );
+
+    await addPost(newPost);
+
+    return null;
+  }
+
+  Future<String?> updateExistingPost({
+    required PostModel post,
+    required String title,
+    required String description,
+    required DateTime? date,
+    required String? hour,
+    required String? urlImage,
+  }) async {
+    if (urlImage == null) {
+      return 'Por favor, selecione uma imagem.';
+    }
+    if (title.trim().isEmpty) {
+      return 'Por favor, informe um título.';
+    }
+    if (description.trim().isEmpty) {
+      return 'Por favor, informe uma legenda.';
+    }
+    if (date == null) {
+      return 'Por favor, selecione uma data.';
+    }
+    if (hour == null || hour.trim().isEmpty) {
+      return 'Por favor, selecione um horário.';
+    }
+
+    post.title = title.trim();
+    post.description = description.trim();
+    post.date = date;
+    post.hour = hour.trim();
+    post.urlImage = urlImage;
+
+    await post.save();
+    notifyListeners();
+    return null;
   }
 
   List<PostModel> getPostsForDate(DateTime date) {
@@ -41,7 +115,7 @@ class ScheduleViewModel extends ChangeNotifier {
   void loadInitialImages() {
     final initialImages = List.generate(10, (_) {
       final seed = _random.nextInt(10000);
-      return 'https://picsum.photos/200/300?seed=$seed';
+      return 'https://picsum.photos/seed/$seed/200/300';
     });
 
     _imageOptions.addAll(initialImages);
@@ -49,16 +123,17 @@ class ScheduleViewModel extends ChangeNotifier {
   }
 
   void addScrollEndListener({
-  required ScrollController controller,
-  required VoidCallback onEndReached,
-  double offset = 100,
-}) {
-  controller.addListener(() {
-    if (controller.position.pixels >= controller.position.maxScrollExtent - offset) {
-      onEndReached();
-    }
-  });
-}
+    required ScrollController controller,
+    required VoidCallback onEndReached,
+    double offset = 100,
+  }) {
+    controller.addListener(() {
+      if (controller.position.pixels >=
+          controller.position.maxScrollExtent - offset) {
+        onEndReached();
+      }
+    });
+  }
 
   Future<void> loadMoreImages() async {
     if (_isLoading) return;
@@ -68,7 +143,7 @@ class ScheduleViewModel extends ChangeNotifier {
 
     final moreImages = List.generate(10, (_) {
       final seed = _random.nextInt(10000);
-      return 'https://picsum.photos/200/300?seed=$seed';
+      return 'https://picsum.photos/seed/$seed/200/300';
     });
 
     _imageOptions.addAll(moreImages);
@@ -79,6 +154,30 @@ class ScheduleViewModel extends ChangeNotifier {
   void selectImage(String url) {
     _selectedImageUrl = url;
     notifyListeners();
+  }
+
+  void ensureImageOption(String url) {
+    if (!_imageOptions.contains(url)) {
+      _imageOptions.insert(0, url);
+      notifyListeners();
+    }
+  }
+
+  void selectExistingImage(String url) {
+    ensureImageOption(url);
+    selectImage(url);
+  }
+
+  void removeImageOption(String url) {
+    if (_imageOptions.contains(url)) {
+      _imageOptions.remove(url);
+      notifyListeners();
+    }
+  }
+
+  void resetImageOptions() {
+    _imageOptions.clear();
+    loadInitialImages();
   }
 
   void clearSelectedImage() {

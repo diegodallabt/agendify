@@ -1,7 +1,6 @@
 import '../../modules/schedule/model/post_model.dart';
 
 class CalendarUtils {
-
   static List<DateTime?> generateDaysForMonth(DateTime month) {
     final firstDayOfMonth = DateTime(month.year, month.month, 1);
     final lastDayOfMonth = DateTime(month.year, month.month + 1, 0);
@@ -29,6 +28,14 @@ class CalendarUtils {
       final postDate = DateTime(p.date.year, p.date.month, p.date.day);
       return postDate == clean;
     });
+  }
+
+  static int countPostsForDate(DateTime date, List<PostModel> allPosts) {
+    final clean = DateTime(date.year, date.month, date.day);
+    return allPosts.where((p) {
+      final pClean = DateTime(p.date.year, p.date.month, p.date.day);
+      return pClean == clean;
+    }).length;
   }
 
   static String monthName(int month) {

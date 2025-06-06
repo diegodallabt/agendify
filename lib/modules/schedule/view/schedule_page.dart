@@ -6,9 +6,12 @@ import '../../../core/utils/formatter.dart';
 import '../viewmodel/schedule_viewmodel.dart';
 import '../widget/button.dart';
 import '../widget/input.dart';
+import '../../schedule/model/post_model.dart';
 
 class SchedulePage extends StatefulWidget {
-  const SchedulePage({super.key});
+  final PostModel? editingPost;
+
+  const SchedulePage({super.key, this.editingPost});
 
   @override
   State<SchedulePage> createState() => _SchedulePageState();
@@ -17,28 +20,74 @@ class SchedulePage extends StatefulWidget {
 class _SchedulePageState extends State<SchedulePage> {
   final ScrollController _scrollController = ScrollController();
   late ScheduleViewModel viewModel;
+
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
   final dateController = TextEditingController();
   final timeController = TextEditingController();
 
+  DateTime? _pickedDate;
+  TimeOfDay? _pickedTime;
+
+  bool _injectedImage = false;
+  String? _injectedUrl;
+
+  bool _isEditing = false;
+
+  @override
   @override
   void initState() {
     super.initState();
     viewModel = context.read<ScheduleViewModel>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      viewModel.resetImageOptions();
+
+      if (widget.editingPost != null) {
+        final post = widget.editingPost!;
+        _injectedUrl = post.urlImage;
+        viewModel.selectExistingImage(_injectedUrl!);
+        _injectedImage = true;
+      }
+    });
+
     viewModel.addScrollEndListener(
       controller: _scrollController,
       onEndReached: viewModel.loadMoreImages,
     );
+
+    if (widget.editingPost != null) {
+      _isEditing = true;
+      final post = widget.editingPost!;
+      titleController.text = post.title;
+      descriptionController.text = post.description;
+      dateController.text = Formatter.formatDate(post.date);
+      _pickedDate = post.date;
+      if (post.hour != null && post.hour!.isNotEmpty) {
+        final parts = post.hour!.split(':');
+        final h = int.tryParse(parts[0]) ?? 0;
+        final m = int.tryParse(parts[1]) ?? 0;
+        _pickedTime = TimeOfDay(hour: h, minute: m);
+        timeController.text = post.hour!;
+      }
+    }
   }
 
   @override
   void dispose() {
+    if (_injectedImage && _injectedUrl != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        viewModel.removeImageOption(_injectedUrl!);
+      });
+    }
     _scrollController.dispose();
+    titleController.dispose();
+    descriptionController.dispose();
+    dateController.dispose();
+    timeController.dispose();
     super.dispose();
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     viewModel = context.watch<ScheduleViewModel>();
@@ -65,13 +114,28 @@ class _SchedulePageState extends State<SchedulePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Center(
-                        child: Text(
-                          'Agendar postagem',
-                          style: Theme.of(context).textTheme.displayLarge,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: Icon(
+                              Icons.arrow_back_ios,
+                              size: 16,
+                              color: primaryColor,
+                            ),
+                          ),
+                          Text(
+                            _isEditing ? 'Editar postagem' : 'Agendar postagem',
+                            style: Theme.of(context).textTheme.displayLarge,
+                          ),
+                          const SizedBox(width: 10),
+                        ],
                       ),
                       const SizedBox(height: 40),
+
                       SizedBox(
                         height: 180,
                         child: ListView.builder(
@@ -102,7 +166,11 @@ class _SchedulePageState extends State<SchedulePage> {
                       ),
 
                       const SizedBox(height: 34),
-                      AFYInput(placeholder: 'Qual o título?', label: 'Título', controller: titleController),
+                      AFYInput(
+                        placeholder: 'Qual o título?',
+                        label: 'Título',
+                        controller: titleController,
+                      ),
                       const SizedBox(height: 24),
                       AFYInput(
                         placeholder: 'Escreva algo legal para as pessoas verem',
@@ -127,13 +195,15 @@ class _SchedulePageState extends State<SchedulePage> {
                               onTap: () async {
                                 final selected = await showDatePicker(
                                   context: context,
-                                  initialDate: DateTime.now(),
+                                  initialDate: _pickedDate ?? DateTime.now(),
                                   firstDate: DateTime.now(),
                                   lastDate: DateTime(2100),
                                 );
                                 if (selected != null) {
-                                  dateController.text =
-                                    Formatter.formatDate(selected);
+                                  _pickedDate = selected;
+                                  dateController.text = Formatter.formatDate(
+                                    selected,
+                                  );
                                 }
                               },
                               icon: Icons.calendar_today,
@@ -149,10 +219,13 @@ class _SchedulePageState extends State<SchedulePage> {
                               onTap: () async {
                                 final selected = await showTimePicker(
                                   context: context,
-                                  initialTime: TimeOfDay.now(),
+                                  initialTime: _pickedTime ?? TimeOfDay.now(),
                                 );
                                 if (selected != null) {
-                                  timeController.text = Formatter.formatTime(selected);
+                                  _pickedTime = selected;
+                                  timeController.text = Formatter.formatTime(
+                                    selected,
+                                  );
                                 }
                               },
                               icon: Icons.access_time,
@@ -161,10 +234,67 @@ class _SchedulePageState extends State<SchedulePage> {
                         ],
                       ),
                       const SizedBox(height: 34),
+
                       AFYButton(
-                        label: 'Agendar',
+                        label: _isEditing ? 'Salvar' : 'Agendar',
                         isLoading: false,
-                        onPressed: () {},
+                        onPressed: () async {
+                          final title = titleController.text.trim();
+                          final description = descriptionController.text.trim();
+                          final date = _pickedDate;
+                          final timeStr = timeController.text.trim();
+                          final imageUrl = viewModel.selectedImageUrl;
+
+                          if (_isEditing) {
+                            final post = widget.editingPost!;
+                            final errorMessage = await viewModel
+                                .updateExistingPost(
+                                  post: post,
+                                  title: title,
+                                  description: description,
+                                  date: date,
+                                  hour: timeStr,
+                                  urlImage: imageUrl,
+                                );
+                            if (errorMessage != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(errorMessage)),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Post atualizado com sucesso!'),
+                                ),
+                              );
+                              Navigator.pop(context);
+                            }
+                          } else {
+                            final errorMessage = await viewModel.schedulePost(
+                              title: title,
+                              description: description,
+                              date: date,
+                              hour: timeStr,
+                              urlImage: imageUrl,
+                            );
+                            if (errorMessage != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(errorMessage)),
+                              );
+                            } else {
+                              titleController.clear();
+                              descriptionController.clear();
+                              dateController.clear();
+                              timeController.clear();
+                              viewModel.clearSelectedImage();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Post agendado com sucesso!'),
+                                ),
+                              );
+                              Navigator.pop(context);
+                            }
+                          }
+                        },
                       ),
                     ],
                   ),
