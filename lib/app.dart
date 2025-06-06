@@ -2,6 +2,7 @@ import 'package:agendify/modules/calendar/view/calendar_page.dart';
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
+import 'modules/schedule/model/post_model.dart';
 import 'modules/schedule/view/schedule_page.dart';
 
 class Agendify extends StatelessWidget {
@@ -16,7 +17,10 @@ class Agendify extends StatelessWidget {
       initialRoute: '/calendar',
       routes: {
         '/calendar': (context) => const CalendarPage(),
-        '/schedule': (context) => const SchedulePage(),
+        '/schedule': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments;
+          return SchedulePage(editingPost: args as PostModel?);
+        },
       },
     );
   }

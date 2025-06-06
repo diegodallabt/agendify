@@ -13,7 +13,8 @@ void main() async {
   final scheduleViewModel = ScheduleViewModel();
   await scheduleViewModel.init();
 
-  final calendarViewModel = CalendarViewModel(scheduleViewModel.posts);
+  final calendarViewModel = CalendarViewModel();
+  await calendarViewModel.init();
 
   runApp(
     MultiProvider(

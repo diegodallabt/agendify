@@ -30,20 +30,20 @@ class AppTheme {
         color: AppColors.dark,
       ),
       bodyLarge: TextStyle(
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: FontWeight.w600,
         color: AppColors.dark,
       ),
       bodyMedium: TextStyle(
-        fontSize: 13.5,
+        fontSize: 14,
         fontWeight: FontWeight.w400,
         color: AppColors.dark,
       ),
       bodySmall: TextStyle(
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: FontWeight.w500,
         color: AppColors.dark,
-      )
+      ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(

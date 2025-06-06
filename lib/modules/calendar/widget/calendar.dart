@@ -48,29 +48,35 @@ class AFYCalendar extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 26),
+
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 19),
           child: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom']
-                    .map((day) => Expanded(
-                          child: Center(
-                            child: Text(
-                              day,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color:
-                                    theme.colorScheme.onSecondaryFixedVariant,
+                children:
+                    ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom']
+                        .map(
+                          (day) => Expanded(
+                            child: Center(
+                              child: Text(
+                                day,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                  color:
+                                      theme.colorScheme.onSecondaryFixedVariant,
+                                ),
                               ),
                             ),
                           ),
-                        ))
-                    .toList(),
+                        )
+                        .toList(),
               ),
               const SizedBox(height: 26),
+
               GridView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
@@ -79,30 +85,37 @@ class AFYCalendar extends StatelessWidget {
                   crossAxisCount: 7,
                   mainAxisSpacing: 4,
                   crossAxisSpacing: 0,
-                  childAspectRatio: 1.5,
+                  childAspectRatio: 1.2,
                 ),
                 itemBuilder: (context, index) {
                   final DateTime? day = days[index];
                   if (day == null) return const SizedBox.shrink();
-    
+
                   final isSelected =
-                      DateUtils.dateOnly(day) == DateUtils.dateOnly(selectedDate);
-                  final hasPost =
-                      CalendarUtils.hasPostForDate(day, allPosts);
-    
+                      DateUtils.dateOnly(day) ==
+                      DateUtils.dateOnly(selectedDate);
+
+                  final postCount = CalendarUtils.countPostsForDate(
+                    day,
+                    allPosts,
+                  );
+
+                  final displayCount = postCount.clamp(0, 3);
+
                   return GestureDetector(
                     onTap: () => onDateSelected(day),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: 30,
-                          height: 30,
+                          width: 31,
+                          height: 31,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? theme.colorScheme.primary
-                                : Colors.transparent,
+                            color:
+                                isSelected
+                                    ? theme.colorScheme.primary
+                                    : Colors.transparent,
                             shape: BoxShape.circle,
                           ),
                           child: Text(
@@ -110,20 +123,32 @@ class AFYCalendar extends StatelessWidget {
                             style: TextStyle(
                               color: isSelected ? Colors.white : textColor,
                               fontWeight: FontWeight.w600,
-                              fontSize: 15,
+                              fontSize: 17,
                             ),
                           ),
                         ),
-                        if (hasPost) const SizedBox(height: 2),
-                        if (hasPost)
-                          Container(
-                            width: 4,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? Colors.white
-                                  : theme.colorScheme.primary,
-                              shape: BoxShape.circle,
+
+                        if (displayCount > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: List.generate(displayCount, (dotIndex) {
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 0.5,
+                                  ),
+                                  width: 4,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isSelected
+                                            ? Colors.white
+                                            : theme.colorScheme.primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                );
+                              }),
                             ),
                           ),
                       ],
