@@ -20,7 +20,7 @@ class PostModel extends HiveObject {
   String? hour;
 
   @HiveField(5)
-  String? urlImage;
+  String urlImage;
 
   PostModel({
     required this.id,

@@ -10,6 +10,7 @@ class AppTheme {
     colorScheme: ColorScheme.light(
       primary: AppColors.primary,
       secondary: AppColors.gray,
+      onSecondaryFixedVariant: AppColors.gray2,
       tertiary: AppColors.dark,
       surface: AppColors.background,
     ),
@@ -28,8 +29,18 @@ class AppTheme {
         fontWeight: FontWeight.w800,
         color: AppColors.dark,
       ),
-      bodyMedium: TextStyle(
+      bodyLarge: TextStyle(
         fontSize: 15,
+        fontWeight: FontWeight.w600,
+        color: AppColors.dark,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 13.5,
+        fontWeight: FontWeight.w400,
+        color: AppColors.dark,
+      ),
+      bodySmall: TextStyle(
+        fontSize: 11,
         fontWeight: FontWeight.w500,
         color: AppColors.dark,
       )
