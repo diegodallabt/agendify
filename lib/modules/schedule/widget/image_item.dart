@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ImageItem extends StatelessWidget {
   final String url;
@@ -29,7 +30,36 @@ class ImageItem extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(9),
-          child: Image.network(url, fit: BoxFit.cover, width: 150, height: 100),
+          child: Image.network(
+            url,
+            fit: BoxFit.cover,
+            width: 150,
+            height: 100,
+            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+              if (wasSynchronouslyLoaded || frame != null) {
+                return child;
+              } else {
+                return Shimmer.fromColors(
+                  baseColor: Colors.grey.shade300,
+                  highlightColor: Colors.grey.shade100,
+                  child: Container(
+                    width: 150,
+                    height: 100,
+                    color: Colors.grey.shade300,
+                  ),
+                );
+              }
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 150,
+                height: 100,
+                color: Colors.grey.shade300,
+                alignment: Alignment.center,
+                child: const Icon(Icons.broken_image, color: Colors.grey),
+              );
+            },
+          ),
         ),
       ),
     );
